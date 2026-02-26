@@ -1,0 +1,33 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:camunda-db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+
+camunda:
+  bpm:
+    # เปิดใช้งาน Admin UI
+    admin-user:
+      id: admin
+      password: admin
+      firstName: Admin
+    # เปิดใช้งาน Filter เริ่มต้นใน Tasklist
+    filter:
+      create: All Tasks
+    # ตั้งค่า Process Engine
+    process-engine:
+      name: default
+      # สำคัญ: ให้ Deploy BPMN อัตโนมัติเมื่อแอปเริ่มทำงาน
+      deployment-resource-pattern: classpath:/processes/*.bpmn
+    # เปิด REST API (จำเป็นถ้าจะเรียกจากภายนอก)
+    rest:
+      enabled: true
+      # เปิด Security สำหรับ REST API (แนะนำให้เลือกอย่างใดอย่างหนึ่ง)
+      # auth-type: basic 
+
+# เปิด H2 Console เพื่อเช็คข้อมูลใน DB (เฉพาะตอนพัฒนา)
+h2:
+  console:
+    enabled: true
+    path: /h2-console
