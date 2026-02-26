@@ -5,6 +5,11 @@ spring:
     password: 
     driver-class-name: org.h2.Driver
 
+jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update  # ให้สร้างตารางอัตโนมัติเมื่อแอปเริ่มทำงาน
+    
 camunda:
   bpm:
     # เปิดใช้งาน Admin UI
@@ -25,6 +30,7 @@ camunda:
       enabled: true
       # เปิด Security สำหรับ REST API (แนะนำให้เลือกอย่างใดอย่างหนึ่ง)
       # auth-type: basic 
+      history-level: full
 
 # เปิด H2 Console เพื่อเช็คข้อมูลใน DB (เฉพาะตอนพัฒนา)
 h2:
