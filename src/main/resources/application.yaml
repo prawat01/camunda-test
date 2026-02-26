@@ -31,9 +31,15 @@ camunda:
       # เปิด Security สำหรับ REST API (แนะนำให้เลือกอย่างใดอย่างหนึ่ง)
       # auth-type: basic 
       history-level: full
+    history:
+      cleanup:
+        enabled: true
+        # ลบข้อมูลเก่าที่เสร็จสิ้นแล้วเกิน 7 วัน
+        history-time-to-live: P7D   
 
 # เปิด H2 Console เพื่อเช็คข้อมูลใน DB (เฉพาะตอนพัฒนา)
 h2:
   console:
     enabled: true
     path: /h2-console
+    

@@ -5,6 +5,7 @@
       <bpmn:outgoing>Flow_0nhi19a</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:userTask id="Activity_1iej5vs" name="Approve Leave" camunda:assignee="admin">
+      <bpmn:extensionElements />
       <bpmn:incoming>Flow_0nhi19a</bpmn:incoming>
       <bpmn:outgoing>Flow_0j1chyq</bpmn:outgoing>
     </bpmn:userTask>

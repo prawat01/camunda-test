@@ -55,6 +55,13 @@
         <version>7.20.0</version>
     </dependency>
 
+	<!-- REST API (ถ้าต้องการให้ระบบอื่นเรียกใช้) -->
+    <dependency>
+        <groupId>org.camunda.bpm.springboot</groupId>
+        <artifactId>camunda-bpm-spring-boot-starter-rest</artifactId>
+        <version>7.20.0</version>
+    </dependency>
+
 	<!-- 3. Spring Boot Starter Data JPA (← สำคัญ! ตัวนี้สร้าง TransactionManager) -->
     <dependency>
         <groupId>org.springframework.boot</groupId>
