@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1gdwl08" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:process id="leaveRequestProcess" name="Leave Request Process" isExecutable="true" camunda:versionTag="v1.0.0" camunda:historyTimeToLive="P30D">
+    <bpmn:startEvent id="startLeaveRequest" name="เริ่มขอลา" camunda:formKey="forms/leave-request-form.html">
+      <bpmn:extensionElements>
+        <camunda:executionListener delegateExpression="${processStartListener}" event="start" />
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_0kmbaju</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="submitLeaveRequest" name="ยื่นคำขอลา" camunda:assignee="${employee}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="startDate" label="วันเริ่มลา" type="date">
+            <camunda:properties />
+            <camunda:validation />
+          </camunda:formField>
+          <camunda:formField id="endDate" label="วันสิ้นสุดการลา" type="date" />
+          <camunda:formField id="reason" label="เหตุผล" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0kmbaju</bpmn:incoming>
+      <bpmn:outgoing>Flow_0xkhr7e</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0kmbaju" sourceRef="startLeaveRequest" targetRef="submitLeaveRequest" />
+    <bpmn:endEvent id="Event_18u3fgx">
+      <bpmn:incoming>Flow_1snifl4</bpmn:incoming>
+      <bpmn:incoming>Flow_03p09ku</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="approveByManager" name="อนุมัติการลา" camunda:assignee="${manager}">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="approved" label="อนุมัติหรือไม่" type="boolean" defaultValue="true" />
+          <camunda:formField id="managerComment" label="หมายเหตุ" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0xkhr7e</bpmn:incoming>
+      <bpmn:outgoing>Flow_096qoth</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="sendApprovalEmail" name="ส่งอีเมลอนุมัติ" camunda:delegateExpression="${sendEmailDelegate}">
+      <bpmn:extensionElements />
+      <bpmn:incoming>flowApproved</bpmn:incoming>
+      <bpmn:outgoing>Flow_0rd6upb</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1jz7t5l">
+      <bpmn:incoming>Flow_096qoth</bpmn:incoming>
+      <bpmn:outgoing>flowRejected</bpmn:outgoing>
+      <bpmn:outgoing>flowApproved</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="sendRejectionEmail" name="ส่งอีเมลปฏิเสธ" camunda:delegateExpression="${sendEmailDelegate}">
+      <bpmn:extensionElements />
+      <bpmn:incoming>flowRejected</bpmn:incoming>
+      <bpmn:outgoing>Flow_03p09ku</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="saveLeaveRecord" name="บันทึกข้อมูลการลา" camunda:delegateExpression="${saveLeaveRecordDelegate}">
+      <bpmn:incoming>Flow_0rd6upb</bpmn:incoming>
+      <bpmn:outgoing>Flow_1snifl4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0xkhr7e" sourceRef="submitLeaveRequest" targetRef="approveByManager" />
+    <bpmn:sequenceFlow id="Flow_096qoth" sourceRef="approveByManager" targetRef="Gateway_1jz7t5l" />
+    <bpmn:sequenceFlow id="flowRejected" name="ปฏิเสธ" sourceRef="Gateway_1jz7t5l" targetRef="sendRejectionEmail">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="flowApproved" name="อนุมัติ" sourceRef="Gateway_1jz7t5l" targetRef="sendApprovalEmail">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_0rd6upb" sourceRef="sendApprovalEmail" targetRef="saveLeaveRecord" />
+    <bpmn:sequenceFlow id="Flow_1snifl4" sourceRef="saveLeaveRecord" targetRef="Event_18u3fgx" />
+    <bpmn:sequenceFlow id="Flow_03p09ku" sourceRef="sendRejectionEmail" targetRef="Event_18u3fgx" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="leaveRequestProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="startLeaveRequest">
+        <dc:Bounds x="182" y="222" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="180" y="265" width="41" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1wxvu1v_di" bpmnElement="submitLeaveRequest">
+        <dc:Bounds x="300" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0boy3rl_di" bpmnElement="approveByManager">
+        <dc:Bounds x="460" y="200" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1jz7t5l_di" bpmnElement="Gateway_1jz7t5l" isMarkerVisible="true">
+        <dc:Bounds x="625" y="215" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vxhhbg_di" bpmnElement="sendApprovalEmail">
+        <dc:Bounds x="600" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ccmgeo_di" bpmnElement="sendRejectionEmail">
+        <dc:Bounds x="600" y="320" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_118zcg3_di" bpmnElement="saveLeaveRecord">
+        <dc:Bounds x="760" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_18u3fgx_di" bpmnElement="Event_18u3fgx">
+        <dc:Bounds x="903" y="232" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0kmbaju_di" bpmnElement="Flow_0kmbaju">
+        <di:waypoint x="218" y="240" />
+        <di:waypoint x="300" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0xkhr7e_di" bpmnElement="Flow_0xkhr7e">
+        <di:waypoint x="400" y="240" />
+        <di:waypoint x="460" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_096qoth_di" bpmnElement="Flow_096qoth">
+        <di:waypoint x="560" y="240" />
+        <di:waypoint x="625" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06e48w6_di" bpmnElement="flowRejected">
+        <di:waypoint x="650" y="265" />
+        <di:waypoint x="650" y="320" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="650" y="290" width="31" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0d3vuhg_di" bpmnElement="flowApproved">
+        <di:waypoint x="650" y="215" />
+        <di:waypoint x="650" y="160" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="652" y="185" width="27" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rd6upb_di" bpmnElement="Flow_0rd6upb">
+        <di:waypoint x="700" y="120" />
+        <di:waypoint x="760" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1snifl4_di" bpmnElement="Flow_1snifl4">
+        <di:waypoint x="860" y="120" />
+        <di:waypoint x="921" y="120" />
+        <di:waypoint x="921" y="232" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03p09ku_di" bpmnElement="Flow_03p09ku">
+        <di:waypoint x="700" y="360" />
+        <di:waypoint x="921" y="360" />
+        <di:waypoint x="921" y="268" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

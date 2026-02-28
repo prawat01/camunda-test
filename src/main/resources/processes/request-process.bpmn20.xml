@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1daa29e" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.44.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.20.0">
+  <bpmn:process id="request-process" name="Request Process" isExecutable="true" camunda:historyTimeToLive="P1D">
+    <bpmn:startEvent id="start" name="Start">
+      <bpmn:outgoing>Flow_1w8ypka</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="sendEmail" name="Send Email" camunda:delegateExpression="${sendEmailDelegate}">
+      <bpmn:incoming>Flow_1vtejvq</bpmn:incoming>
+      <bpmn:outgoing>Flow_038pdyh</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1w8ypka" sourceRef="start" targetRef="approveRequest" />
+    <bpmn:endEvent id="end" name="End">
+      <bpmn:incoming>Flow_038pdyh</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_038pdyh" sourceRef="sendEmail" targetRef="end" />
+    <bpmn:userTask id="approveRequest" name="Approve Request" camunda:assignee="demo">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_1w8ypka</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vtejvq</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1vtejvq" sourceRef="approveRequest" targetRef="sendEmail" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="request-process">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="start">
+        <dc:Bounds x="182" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="188" y="145" width="25" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1fiybfd_di" bpmnElement="sendEmail">
+        <dc:Bounds x="460" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1bsuile_di" bpmnElement="end">
+        <dc:Bounds x="642" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="650" y="145" width="20" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zkgqiw_di" bpmnElement="approveRequest">
+        <dc:Bounds x="280" y="80" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1w8ypka_di" bpmnElement="Flow_1w8ypka">
+        <di:waypoint x="218" y="120" />
+        <di:waypoint x="280" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_038pdyh_di" bpmnElement="Flow_038pdyh">
+        <di:waypoint x="560" y="120" />
+        <di:waypoint x="642" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vtejvq_di" bpmnElement="Flow_1vtejvq">
+        <di:waypoint x="380" y="120" />
+        <di:waypoint x="460" y="120" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
