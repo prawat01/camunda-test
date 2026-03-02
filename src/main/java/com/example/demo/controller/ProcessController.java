@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.dto.LeaveRequestDTO;
 
+import org.camunda.bpm.engine.TaskService;
+import org.camunda.bpm.engine.task.Task;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -18,6 +21,8 @@ public class ProcessController {
 
     @Autowired
     private RuntimeService runtimeService;
+    @Autowired
+    private TaskService taskService;
 
     /**
      * Start Leave Request Process
@@ -103,25 +108,97 @@ public class ProcessController {
     @PostMapping("/start-leave-request-dto")
     public Map<String, Object> startLeaveRequestDTO(@RequestBody LeaveRequestDTO request) {
     
-    Map<String, Object> variables = new HashMap<>();
-    variables.put("employee", request.getEmployee());
-    variables.put("employeeName", request.getEmployeeName());
-    variables.put("employeeEmail", request.getEmployeeEmail());
-    variables.put("manager", request.getManager());
-    variables.put("startDate", request.getStartDate());
-    variables.put("endDate", request.getEndDate());
-    variables.put("reason", request.getReason());
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("employee", request.getEmployee());
+        variables.put("employeeName", request.getEmployeeName());
+        variables.put("employeeEmail", request.getEmployeeEmail());
+        variables.put("manager", request.getManager());
+        variables.put("startDate", request.getStartDate());
+        variables.put("endDate", request.getEndDate());
+        variables.put("reason", request.getReason());
 
-    ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(
-        "leaveRequestProcess", 
-        variables
-    );
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(
+            "leaveRequestProcess", 
+            variables
+        );
 
-    Map<String, Object> response = new HashMap<>();
-    response.put("success", true);
-    response.put("message", "Process started successfully");
-    response.put("processInstanceId", processInstance.getId());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Process started successfully");
+        response.put("processInstanceId", processInstance.getId());
 
-    return response;
-}
+        return response;
+    }
+
+    @PostMapping("/test-rejection-scenario")
+    public Map<String, Object> testRejectionScenario() {
+        
+        System.out.println(">>> Testing Rejection Scenario");
+        
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // 1. Start Process
+            Map<String, Object> startVariables = new HashMap<>();
+            startVariables.put("employee", "test.user");
+            startVariables.put("employeeName", "Test User");
+            startVariables.put("employeeEmail", "test@company.com");
+            startVariables.put("manager", "admin");
+            startVariables.put("startDate", "2026-03-10");
+            startVariables.put("endDate", "2026-03-12");
+            startVariables.put("reason", "ทดสอบการปฏิเสธ");
+            
+            ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(
+                "leaveRequestProcess", 
+                startVariables
+            );
+            
+            String processInstanceId = processInstance.getId();
+            System.out.println(">>> Process Started: " + processInstanceId);
+            
+            // 2. Complete Task แรก (ยื่นคำขอลา)
+            Task submitTask = taskService.createTaskQuery()
+                .processInstanceId(processInstanceId)
+                .taskDefinitionKey("submitRequestTask")
+                .singleResult();
+            
+            if (submitTask != null) {
+                Map<String, Object> submitVars = new HashMap<>();
+                submitVars.put("startDate", "2026-03-10");
+                submitVars.put("endDate", "2026-03-12");
+                submitVars.put("reason", "ทดสอบการปฏิเสธ");
+                
+                taskService.complete(submitTask.getId(), submitVars);
+                System.out.println(">>> Task 1 Completed");
+            }
+            
+            // 3. Complete Task ที่สอง (อนุมัติ) - เลือก ปฏิเสธ
+            Task approveTask = taskService.createTaskQuery()
+                .processInstanceId(processInstanceId)
+                .taskDefinitionKey("approveTask")
+                .singleResult();
+            
+            if (approveTask != null) {
+                Map<String, Object> approveVars = new HashMap<>();
+                approveVars.put("approved", false);  // ← สำคัญ! เลือกปฏิเสธ
+                approveVars.put("managerComment", "งานสำคัญ ต้องอยู่ทำโปรเจกต์");
+                
+                taskService.complete(approveTask.getId(), approveVars);
+                System.out.println(">>> Task 2 Completed (REJECTED)");
+            }
+            
+            // 4. Response
+            response.put("success", true);
+            response.put("message", "Rejection scenario completed");
+            response.put("processInstanceId", processInstanceId);
+            response.put("result", "REJECTED");
+            
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return response;
+    }
 }
