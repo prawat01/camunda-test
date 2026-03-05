@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Start Leave Request Process</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #result { margin-top: 20px; padding: 15px; border: 1px solid #ddd; display: none; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Start Leave Request Process</h1>
+    
+    <form id="leaveForm">
+        <div class="form-group">
+            <label>Employee Username:</label>
+            <input type="text" id="employee" value="john.doe" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Employee Name:</label>
+            <input type="text" id="employeeName" value="John Doe" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Employee Email:</label>
+            <input type="email" id="employeeEmail" value="john@company.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Manager Username:</label>
+            <input type="text" id="manager" value="jane.smith" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Start Date:</label>
+            <input type="date" id="startDate" value="2026-03-01" required>
+        </div>
+        
+        <div class="form-group">
+            <label>End Date:</label>
+            <input type="date" id="endDate" value="2026-03-05" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Reason:</label>
+            <textarea id="reason" rows="3">Personal matter</textarea>
+        </div>
+        
+        <button type="submit">🚀 Start Process</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('leaveForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const data = {
+                employee: document.getElementById('employee').value,
+                employeeName: document.getElementById('employeeName').value,
+                employeeEmail: document.getElementById('employeeEmail').value,
+                manager: document.getElementById('manager').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                reason: document.getElementById('reason').value
+            };
+
+            try {
+                const response = await fetch('/api/process/start-leave-request-custom', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                
+                if (result.success) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>Process Instance ID:</strong> ${result.processInstanceId}</p>
+                        <p><strong>Message:</strong> ${result.message}</p>
+                        <a href="/camunda/app/cockpit" target="_blank">View in Cockpit</a>
+                    `;
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.innerHTML = `<h3>❌ Error</h3><p>${result.message}</p>`;
+                }
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'error';
+                resultDiv.innerHTML = `<h3>❌ Error</h3><p>${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
